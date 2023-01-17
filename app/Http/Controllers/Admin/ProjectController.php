@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Project;
+use App\Models\Type;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-use App\Models\Project;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -29,9 +30,11 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Project $project)
     {
-        return view('admin.projects.create');
+        $types = Type::All();
+
+        return view('admin.projects.create', compact('types', 'project'));
     }
 
     /**
@@ -76,7 +79,8 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('admin.projects.edit', compact('project'));
+        $types = Type::all();
+        return view('admin.projects.edit', compact('project', 'types'));
     }
 
     /**
@@ -92,6 +96,8 @@ class ProjectController extends Controller
         $project_slug = Str::slug($val_data['title']);
         $val_data['slug'] = $project_slug;
 
+        // dd($request->type);
+
         $project->update($val_data);
 
         return to_route('admin.projects.index')->with('message', "$project->title added successfully");
@@ -105,6 +111,9 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        if ($project->image) {
+            Storage::delete($project->image);
+        }
         $project->delete();
 
         return to_route('admin.projects.index')->with('message', "$project->title deleted successfully");
@@ -118,7 +127,8 @@ class ProjectController extends Controller
         $validator = Validator::make($data, [
             'title' => 'required|min:5|max:100',
             'overview' => 'nullable',
-            'cover' => 'nullable|image|max:500'
+            'cover' => 'nullable|image|max:500',
+            'type' => 'nullable|exists:types,id'
         ], [
             'title.required' => 'Il titolo é obbligatorio',
             'title.min' => 'Il titolo deve essere almeno :min caratteri',
