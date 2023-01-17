@@ -33,7 +33,7 @@ class ProjectController extends Controller
     public function create(Project $project)
     {
         $types = Type::All();
-
+        // dd($types);
         return view('admin.projects.create', compact('types', 'project'));
     }
 
@@ -45,7 +45,8 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        // dd($request->cover);
+
+        // dd($request->all());
         $val_data = $this->validation($request->all());
 
         $project_slug = Str::slug($val_data['title']);
@@ -56,6 +57,7 @@ class ProjectController extends Controller
         $val_data['cover'] = $cover;
 
         $project = Project::create($val_data);
+        // dd($request->all);
 
         return to_route('admin.projects.index')->with('message', "$project->title added successfully");
     }
@@ -68,6 +70,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        // dd($project->type_id);
         return view('admin.projects.show', compact('project'));
     }
 
@@ -128,7 +131,7 @@ class ProjectController extends Controller
             'title' => 'required|min:5|max:100',
             'overview' => 'nullable',
             'cover' => 'nullable|image|max:500',
-            'type' => 'nullable|exists:types,id'
+            'type_id' => 'nullable|exists:types,id'
         ], [
             'title.required' => 'Il titolo é obbligatorio',
             'title.min' => 'Il titolo deve essere almeno :min caratteri',
